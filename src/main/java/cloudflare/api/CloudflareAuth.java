@@ -20,7 +20,6 @@ public class CloudflareAuth {
         return key;
     }
 
-
     public String getEmail() {
         return email;
     }

@@ -21,8 +21,9 @@ import java.io.UnsupportedEncodingException;
 public class CloudflareRequest {
     private static CloudflareAuth cloudflareAuth;
     private static String requestURL;
-    private static String data = "";
-final static Logger logger = Logger.getLogger(CloudflareRequest.class);
+    private static String postData = "";
+    final static Logger logger = Logger.getLogger(CloudflareRequest.class);
+
     public CloudflareRequest(CloudflareAuth cloudflareAuth, String zoneId, String action) {
         this.cloudflareAuth = cloudflareAuth;
         requestURL = String.format("%s/%s/%s", Auth.API_ENDPOINT, zoneId, action);
@@ -33,7 +34,7 @@ final static Logger logger = Logger.getLogger(CloudflareRequest.class);
         arr.add(value);
         JsonObject obj = new JsonObject();
         obj.add(key, arr);
-        data = obj.toString();
+        postData = obj.toString();
     }
 
     public static void execute() {
@@ -41,7 +42,7 @@ final static Logger logger = Logger.getLogger(CloudflareRequest.class);
         deleteReq.setHeader("X-Auth-Email", cloudflareAuth.getEmail());
         deleteReq.setHeader("X-Auth-Key", cloudflareAuth.getKey());
         deleteReq.setHeader("Content-Type", "application/json");
-        deleteReq.setEntity(new StringEntity(data, "UTF-8"));
+        deleteReq.setEntity(new StringEntity(postData, "UTF-8"));
         try {
             StringBuilder sb = new StringBuilder();
             HttpResponse response = cloudflareAuth.getClient().execute(deleteReq);
@@ -52,26 +53,26 @@ final static Logger logger = Logger.getLogger(CloudflareRequest.class);
             }
             JsonObject objResult = new JsonParser().parse(sb.toString()).getAsJsonObject();
             if (!objResult.has("success")) {
-                System.out.println("Server error");
+                logger.info("Server error");
             }
-            logger.info("hahahihi");
-            logger.error("hahahihi");
             String result = objResult.get("success").toString();
             switch (result) {
                 case "true":
-                    System.out.println(objResult.get("result").toString());
+                    logger.info(objResult.get("result").toString());
                     break;
                 case "false":
-                    System.out.println(objResult.get("errors").toString());
+                    logger.error(objResult.get("errors").toString());
                     break;
                 default:
-                    System.out.println("Internal error");
+                    logger.error("Internal error");
                     break;
             }
         } catch (UnsupportedEncodingException | ClientProtocolException e) {
             e.printStackTrace();
+            logger.error(e.getMessage(), e);
         } catch (IOException e) {
             e.printStackTrace();
+            logger.error(e.getMessage(), e);
         }
     }
 }
