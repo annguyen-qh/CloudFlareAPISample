@@ -1,7 +1,7 @@
-package cloudflare.api;
+package cloudflare;
 
-import cloudflare.api.constants.Auth;
-import cloudflare.api.utils.HttpDeleteWithBody;
+import cloudflare.settings.Constants;
+import cloudflare.utils.HttpDeleteWithBody;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -26,7 +26,7 @@ public class CloudflareRequest {
 
     public CloudflareRequest(CloudflareAuth cloudflareAuth, String zoneId, String action) {
         this.cloudflareAuth = cloudflareAuth;
-        requestURL = String.format("%s/%s/%s", Auth.API_ENDPOINT, zoneId, action);
+        requestURL = String.format("%s/%s/%s", Constants.API_ENDPOINT, zoneId, action);
     }
 
     public static void setData(String key, String value) {
@@ -44,16 +44,17 @@ public class CloudflareRequest {
         deleteReq.setHeader("Content-Type", "application/json");
         deleteReq.setEntity(new StringEntity(postData, "UTF-8"));
         try {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder responseString = new StringBuilder();
             HttpResponse response = cloudflareAuth.getClient().execute(deleteReq);
             BufferedReader rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
             String line = "";
             while ((line = rd.readLine()) != null) {
-                sb.append(line);
+                responseString.append(line);
             }
-            JsonObject objResult = new JsonParser().parse(sb.toString()).getAsJsonObject();
+            JsonObject objResult = new JsonParser().parse(responseString.toString()).getAsJsonObject();
             if (!objResult.has("success")) {
                 logger.info("Server error");
+                return;
             }
             String result = objResult.get("success").toString();
             switch (result) {

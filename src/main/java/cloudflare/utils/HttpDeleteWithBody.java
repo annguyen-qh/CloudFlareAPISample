@@ -1,4 +1,4 @@
-package cloudflare.api.utils;
+package cloudflare.utils;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
